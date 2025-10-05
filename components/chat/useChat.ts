@@ -131,14 +131,14 @@ export function useChat() {
     if (weatherContext) {
       const loc = weatherContext.weather.location?.name || destination || "this trek";
       return [
-        "Change city",
+        "Change location",
         `Suggest a 2-day itinerary around ${loc}`,
         "How will the weather affect difficulty?",
         "What gear should I pack for these conditions?",
       ];
     }
     return [
-      "Change city",
+      "Change location",
       "What are popular treks nearby?",
       "What is the best season to visit?",
       "Any beginner-friendly routes?",

@@ -50,7 +50,7 @@ export default function ChatPanel({ compact = false }: ChatPanelProps) {
         compact={compact}
         followUpSuggestions={followUpSuggestions}
         onSuggestionClick={(q) => {
-          if (q.toLowerCase().includes("change city")) {
+          if (q.toLowerCase().includes("change location")) {
             beginChangeCity();
           } else {
             send(q);

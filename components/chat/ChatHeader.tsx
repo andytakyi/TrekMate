@@ -33,10 +33,10 @@ export default function ChatHeader({ title, subtitle, onChangeCity }: ChatHeader
         <button
           type="button"
           onClick={onChangeCity}
-          className="px-3 py-2 rounded-full bg-white text-green-50 regular-12 hover:bg-white/90 transition-colors"
-          title="Change city"
+          className="px-3 text-xs py-2 rounded-full bg-white text-green-50 regular-12 hover:bg-white/90 transition-colors"
+          title="Change location"
         >
-          Change city
+          Change location
         </button>
       )}
     </div>
