@@ -1,5 +1,6 @@
 {
-  "name": "travel-app",
+  "name": "TrekMate",
+  "description": "App for passionate trekkers",
   "version": "0.1.0",
   "private": true,
   "scripts": {
