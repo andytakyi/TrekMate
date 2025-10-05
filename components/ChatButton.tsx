@@ -15,7 +15,7 @@ const ChatButton = () => {
         aria-label="Open chat"
       >
         {isOpen ? (
-          // Close icon
+          // Close
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -31,7 +31,7 @@ const ChatButton = () => {
             />
           </svg>
         ) : (
-          // Chat bubble icon
+          // Chat bubble
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -48,13 +48,13 @@ const ChatButton = () => {
           </svg>
         )}
 
-        {/* Notification badge (optional - for unread messages) */}
+        {/* Notification badge ( for unread messages) */}
         <span className="absolute -top-1 -right-1 flexCenter h-5 w-5 rounded-full bg-orange-50 text-white text-xs font-bold">
           1
         </span>
       </button>
 
-      {/* Chat Panel - placeholder for now */}
+      {/* Chat Panel */}
       {isOpen && (
         <div className="fixed bottom-24 right-5 z-40 w-[580px] max-w-[90vw] h-[600px] bg-white rounded-3xl shadow-2xl border border-gray-20 overflow-hidden flex flex-col">
           {/* Header */}
@@ -81,7 +81,7 @@ const ChatButton = () => {
             </div>
           </div>
 
-          {/* Messages area - placeholder */}
+          {/* Messages area */}
           <div className="flex-1 p-6 overflow-y-auto bg-gray-10">
             <div className="flex flex-col gap-4">
               {/* AI message */}
@@ -105,7 +105,7 @@ const ChatButton = () => {
             </div>
           </div>
 
-          {/* Input area - placeholder */}
+        {/* Input area */}
           <div className="p-4  bg-white">
             <div className="flex gap-2">
               <input
