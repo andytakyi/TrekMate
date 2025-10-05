@@ -56,7 +56,7 @@ export default function ChatInput({
               <div
                 role="group"
                 aria-label="Speech language"
-                className="shrink-0 inline-flex items-center h-10 sm:h-12 rounded-full border border-gray-20 overflow-hidden bg-white"
+                className="shrink-0 inline-flex items-center h-6 sm:h-8 rounded-full border border-gray-20 overflow-hidden bg-white"
               >
                 <button
                   type="button"
@@ -83,7 +83,7 @@ export default function ChatInput({
                 type="button"
                 onClick={toggleListening}
                 disabled={disabled}
-                className={`h-10 w-10 sm:h-12 sm:w-12 rounded-full flexCenter transition-colors shrink-0 ${isListening ? "bg-red-500 hover:bg-red-600" : "bg-gray-20 hover:bg-gray-30"
+                className={`h-6 w-10 sm:h-8 sm:w-12 rounded-full flexCenter transition-colors shrink-0 ${isListening ? "bg-red-500 hover:bg-red-600" : "bg-gray-20 hover:bg-gray-30"
                   }`}
                 aria-label={isListening ? "Stop voice input" : "Start voice input"}
                 title={isListening ? "Stop voice input" : "Start voice input"}
@@ -103,7 +103,7 @@ export default function ChatInput({
           <button
             onClick={onSend}
             disabled={disabled || !input.trim()}
-            className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-green-50 flexCenter hover:bg-green-90 transition-colors disabled:bg-gray-20 disabled:cursor-not-allowed shrink-0"
+            className="h-6 w-10 sm:h-8 sm:w-12 rounded-full bg-green-50 flexCenter hover:bg-green-90 transition-colors disabled:bg-gray-20 disabled:cursor-not-allowed shrink-0"
             aria-label="Send message"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="white" className="w-4 h-4 sm:w-5 sm:h-5">

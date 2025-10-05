@@ -11,7 +11,7 @@ export function useChat() {
     {
       id: "welcome",
       role: "assistant",
-      content: "Hi! I'm TrekMate AI. Where do you want to trek/travel in Japan?",
+      content: "Hi! I'm TrekMate AI. Where do you want to trek/travel in Japan? 🏔️",
     },
   ]);
   const [input, setInput] = useState("");
@@ -29,6 +29,7 @@ export function useChat() {
   const [weatherContext, setWeatherContext] = useState<
     { weather: WeatherData; summary: WeatherSummary } | null
   >(null);
+  const [followUpSuggestions, setFollowUpSuggestions] = useState<string[]>([]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -127,11 +128,29 @@ export function useChat() {
     []
   );
 
-  const send = async () => {
-    if (!input.trim() || isLoading) return;
+  const generateFollowUpSuggestions = useCallback((): string[] => {
+    if (weatherContext) {
+      const loc = weatherContext.weather.location?.name || destination || "this trek";
+      return [
+        `Suggest a 2-day itinerary around ${loc}`,
+        "How will the weather affect difficulty?",
+        "What gear should I pack for these conditions?",
+      ];
+    }
+    return [
+      "What are popular treks nearby?",
+      "What is the best season to visit?",
+      "Any beginner-friendly routes?",
+    ];
+  }, [weatherContext, destination]);
 
-    const userMessage = input.trim();
-    setInput("");
+  const send = async (overrideText?: string) => {
+    const prepared = (overrideText ?? input).trim();
+    if (!prepared || isLoading) return;
+
+    setFollowUpSuggestions([]);
+    const userMessage = prepared;
+    if (overrideText === undefined) setInput("");
     addMessage("user", userMessage);
     setIsLoading(true);
 
@@ -158,6 +177,7 @@ export function useChat() {
 
           setTimeout(() => {
             addMessage("assistant", "Ask me follow-up questions or request adjustments (distance, pace, budget). 🏔️");
+            setFollowUpSuggestions(generateFollowUpSuggestions());
             setPhase("chat");
           }, 200);
         } else if (result.suggestions && result.suggestions.length > 0) {
@@ -181,6 +201,7 @@ export function useChat() {
               userQuestion: userMessage,
             });
             addMessage("assistant", reply);
+            setFollowUpSuggestions(generateFollowUpSuggestions());
           } catch (e) {
             console.error("AI follow-up error:", e);
             addMessage("assistant", "I couldn't process that question right now. Please try again.");
@@ -214,6 +235,7 @@ export function useChat() {
     speechLang,
     messagesEndRef,
     inputRef,
+    followUpSuggestions,
     // actions
     setInput,
     send,

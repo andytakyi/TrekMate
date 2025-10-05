@@ -25,6 +25,7 @@ export default function ChatPanel({ compact = false }: ChatPanelProps) {
     isSpeechSupported,
     toggleListening,
     setSpeechLang,
+    followUpSuggestions,
   } = useChat();
 
   return (
@@ -33,7 +34,14 @@ export default function ChatPanel({ compact = false }: ChatPanelProps) {
         title="TrekMate AI"
         subtitle={phase === "askDestination" ? "Weather & Trek Assistant" : "Ready to help"}
       />
-      <ChatMessages messages={messages} isLoading={isLoading} messagesEndRef={messagesEndRef} compact={compact} />
+      <ChatMessages
+        messages={messages}
+        isLoading={isLoading}
+        messagesEndRef={messagesEndRef}
+        compact={compact}
+        followUpSuggestions={followUpSuggestions}
+        onSuggestionClick={(q) => send(q)}
+      />
       <ChatInput
         input={input}
         setInput={setInput}
