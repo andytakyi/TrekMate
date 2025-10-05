@@ -11,12 +11,9 @@ export interface WeatherActionResult {
   success: boolean;
   data?: WeatherData & { summary: ReturnType<typeof generateWeatherSummary> };
   error?: string;
-  suggestions?: GeocodingResult[]; // Multiple location matches
+  suggestions?: GeocodingResult[];
 }
 
-/**
- * Server action to fetch weather for a location
- */
 export async function getWeatherForLocation(
   locationName: string
 ): Promise<WeatherActionResult> {
@@ -28,7 +25,7 @@ export async function getWeatherForLocation(
       };
     }
 
-    // Step 1: Geocode the location
+    // Geocode the location
     const geocodeResults = await geocodeLocation(locationName.trim());
 
     if (geocodeResults.length === 0) {
@@ -60,7 +57,7 @@ export async function getWeatherForLocation(
       selectedLocation = geocodeResults[0];
     }
 
-    // Step 2: Fetch weather forecast
+    // Fetch weather forecast
     const weatherData = await fetchWeatherForecast(
       selectedLocation.latitude,
       selectedLocation.longitude,
@@ -69,45 +66,7 @@ export async function getWeatherForLocation(
       selectedLocation.admin1
     );
 
-    // Step 3: Generate summary and recommendations
-    const summary = generateWeatherSummary(weatherData);
-
-    return {
-      success: true,
-      data: {
-        ...weatherData,
-        summary,
-      },
-    };
-  } catch (error) {
-    console.error("Weather fetch error:", error);
-    return {
-      success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "Failed to fetch weather data. Please try again.",
-    };
-  }
-}
-
-/**
- * Server action to fetch weather for specific coordinates
- */
-export async function getWeatherForCoordinates(
-  latitude: number,
-  longitude: number,
-  locationName: string
-): Promise<WeatherActionResult> {
-  try {
-    const weatherData = await fetchWeatherForecast(
-      latitude,
-      longitude,
-      locationName,
-      "Unknown",
-      undefined
-    );
-
+    // Generate summary and recommendations
     const summary = generateWeatherSummary(weatherData);
 
     return {

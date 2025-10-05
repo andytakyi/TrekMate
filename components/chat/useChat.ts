@@ -40,7 +40,6 @@ export function useChat() {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Cleanup speech recognition on unmount
   useEffect(() => {
     return () => {
       try {

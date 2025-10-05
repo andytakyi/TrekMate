@@ -6,7 +6,7 @@ import ChatInput from "./ChatInput";
 import { useChat } from "./useChat";
 
 type ChatPanelProps = {
-  compact?: boolean; // if true, use smaller message width (for floating panel)
+  compact?: boolean;
 };
 
 export default function ChatPanel({ compact = false }: ChatPanelProps) {

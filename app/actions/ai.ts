@@ -23,7 +23,7 @@ function buildPrompt(input: GenerateTrekPlanInput): { system: string; user: stri
     `${destination}\n${userQuestion || ""}`
   );
 
-  // Compact the weather payload for the prompt to keep tokens small
+  // Compact the weather payload
   const compact = {
     location: weather.location,
     timezone: weather.timezone,
@@ -71,7 +71,6 @@ export async function generateTrekPlan(input: GenerateTrekPlanInput): Promise<st
         { role: "user", content: user },
       ],
     }),
-    // Keep server action fast; Groq is quick, but set a reasonable timeout via Next fetch options
     next: { revalidate: 0 },
   });
 
