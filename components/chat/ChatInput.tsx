@@ -27,7 +27,7 @@ export default function ChatInput({
   onSend,
   inputRef,
 }: ChatInputProps) {
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       onSend();
@@ -37,19 +37,30 @@ export default function ChatInput({
   return (
     <div className="p-4 bg-white border-t border-gray-20">
       <div className="flex flex-col gap-2">
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
           <input
             ref={inputRef}
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
+            onKeyDown={handleKeyDown}
             placeholder={placeholder}
             disabled={disabled}
             className="w-full min-w-0 px-4 py-3 border border-gray-20 rounded-full regular-14 focus:outline-none focus:border-green-50 transition-colors disabled:bg-gray-10 disabled:cursor-not-allowed"
           />
+          <button
+            onClick={() => onSend()}
+            disabled={disabled || !input.trim()}
+            className="h-10 w-12 sm:h-11 sm:w-14 rounded-full bg-green-50 flexCenter hover:bg-green-90 transition-colors disabled:bg-gray-20 disabled:cursor-not-allowed shrink-0"
+            aria-label="Send message"
+            title="Send"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="white" className="w-4 h-4 sm:w-5 sm:h-5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+            </svg>
+          </button>
         </div>
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center justify-start gap-2">
           <div className="flex items-center gap-2">
 
             {isSpeechSupported && (
@@ -100,16 +111,6 @@ export default function ChatInput({
               </button>
             )}
           </div>
-          <button
-            onClick={onSend}
-            disabled={disabled || !input.trim()}
-            className="h-6 w-10 sm:h-8 sm:w-12 rounded-full bg-green-50 flexCenter hover:bg-green-90 transition-colors disabled:bg-gray-20 disabled:cursor-not-allowed shrink-0"
-            aria-label="Send message"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="white" className="w-4 h-4 sm:w-5 sm:h-5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-            </svg>
-          </button>
         </div>
       </div>
     </div>

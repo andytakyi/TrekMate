@@ -67,7 +67,7 @@ const ChatButton = () => {
       {isOpen && (
         <div
           ref={chatPanelRef}
-          className="fixed bottom-12 right-5 z-40 w-[580px] max-w-[90vw] md:w-[75vw] h-[650px] bg-white rounded-3xl shadow-2xl border border-gray-20 overflow-hidden flex flex-col"
+          className="fixed bottom-12 right-5 z-40 w-[580px] max-w-[90vw] md:w-[75vw] h-[700px] bg-white rounded-3xl shadow-2xl border border-gray-20 overflow-hidden flex flex-col"
         >
           <ChatPanel compact />
         </div>
