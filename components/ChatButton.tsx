@@ -31,7 +31,7 @@ const ChatButton = () => {
       {/* Floating Chat Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed ${!isOpen ? "bottom-5 right-5" : "bottom-3 right-3"} z-50 flexCenter ${!isOpen ? "h-16 w-16" : "h-8 w-8"} rounded-full border border-green-50 bg-white shadow-lg transition-all hover:scale-110 hover:shadow-xl active:scale-95`}
+        className={`fixed ${!isOpen ? "bottom-5 right-5" : "bottom-3 right-3"} z-50 flexCenter ${!isOpen ? "h-16 w-16" : "h-8 w-8"} rounded-full border border-green-50 bg-white shadow-lg transition-all duration-300 ${!isOpen ? "animate-bounce" : ""} hover:scale-110 hover:shadow-xl active:scale-95`}
         aria-label="Open chat"
       >
         {isOpen ? (
