@@ -63,6 +63,15 @@ const ChatButton = () => {
         )}
       </button>
 
+      {/* Floating CTA label */}
+      {!isOpen && (
+        <div className="fixed bottom-12 right-24 z-50 select-none pointer-events-none">
+          <div className="rounded-full bg-white/90 backdrop-blur px-3 py-1 text-emerald-700 text-sm font-semibold shadow-lg border border-emerald-100">
+            Ask TrekMate AI
+          </div>
+        </div>
+      )}
+
       {/* Chat Panel */}
       {isOpen && (
         <div
