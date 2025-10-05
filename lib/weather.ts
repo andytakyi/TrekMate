@@ -38,15 +38,23 @@ const WEATHER_CODES: Record<number, string> = {
 };
 
 /**
+ * Detect if a string contains Japanese characters (Hiragana, Katakana, Kanji)
+ */
+function containsJapanese(text: string): boolean {
+  return /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9faf\uFF66-\uFF9D]/.test(text);
+}
+
+/**
  * Geocode a location name to coordinates
  */
 export async function geocodeLocation(
   locationName: string
 ): Promise<GeocodingResult[]> {
+  const language = containsJapanese(locationName) ? "ja" : "en";
   const params = new URLSearchParams({
     name: locationName,
     count: "5",
-    language: "en",
+    language,
     format: "json",
   });
 

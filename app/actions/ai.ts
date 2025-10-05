@@ -19,6 +19,9 @@ function getGroqApiKey(): string {
 
 function buildPrompt(input: GenerateTrekPlanInput): { system: string; user: string } {
   const { destination, weather, summary, userQuestion } = input;
+  const isJapanese = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9faf\uFF66-\uFF9D]/.test(
+    `${destination}\n${userQuestion || ""}`
+  );
 
   // Compact the weather payload for the prompt to keep tokens small
   const compact = {
@@ -33,7 +36,9 @@ function buildPrompt(input: GenerateTrekPlanInput): { system: string; user: stri
 
   const system = [
     "You are TrekMate, an expert trekking and travel guide for Japan.",
-    "Be concise and practical. You will be given weather data too, you can use it too.",
+    isJapanese
+      ? "Respond in natural Japanese. Be concise, practical, and safety-focused."
+      : "Respond in concise English. Be practical and safety-focused.",
   ].join(" ");
 
   const user = [
