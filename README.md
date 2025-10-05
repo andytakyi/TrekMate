@@ -7,9 +7,7 @@
 
 ---
 
-### Why I built this
-
-I love the mountains in Japan and I wanted a fast, practical assistant that merges real‑time weather with an LLM to plan treks safely. I built this project to explore how generative AI can become a reliable outdoor copilot, with a strong focus on speed, clarity, and Japanese voice input.
+TrekMate is a modern, AI-assisted trip planner for hikers and campers. Chat for trail advice, get real-time weather insights, and plan confidently with a fast, responsive interface.
 
 ### What it does (at a glance)
 - Fetches weather from a free public API (Open‑Meteo) with no API key required
