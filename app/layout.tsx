@@ -7,7 +7,7 @@ import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "TrekMate",
-  description: "App for Campers",
+  description: "TrekMate Japan — weather‑aware trekking with Japanese voice and AI",
 };
 
 export default function RootLayout({

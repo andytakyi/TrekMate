@@ -7,18 +7,15 @@ const Guide = () => {
       <div className="padding-container max-container w-full pb-24">
         <Image src="/camp.svg" alt="camp" width={50} height={50} />
         <p className="uppercase regular-18 -mt-1 mb-3 text-green-50">
-          We are here for you
+          TrekMate in Japan
         </p>
         <div className="flex flex-wrap justify-between gap-5 lg:gap-10">
           <h2 className="bold-40 lg:bold-64 xl:max-w-[390px]">
-            Guide You to Easy Path
+            Speak Japanese, get the best route
           </h2>
           <p className="regular-16 text-gray-30 xl:max-w-[520px]">
-            Only with the hilink application you will no longer get lost and get
-            lost again, because we already support offline maps when there is no
-            internet connection in the field. Invite your friends, relatives and
-            friends to have fun in the wilderness through the valley and reach
-            the top of the mountain
+            TrekMate combines Japanese voice input and weather insights to propose AI itineraries.
+            With offline maps, you are confident even when there is no signal.
           </p>
         </div>
       </div>
@@ -44,15 +41,15 @@ const Guide = () => {
             <div className="flex w-full flex-col">
               <div className="flexBetween w-full">
                 <p className="regular-16 text-gray-20">Destination</p>
-                <p className="bold-16 text-green-50">48 min</p>
+                <p className="bold-16 text-green-50">45 min</p>
               </div>
-              <p className="bold-20 mt-2">Aguas Calientes</p>
+              <p className="bold-20 mt-2">Mt. Takao Summit</p>
             </div>
 
             <div className="flex w-full flex-col">
               <p className="regular-16 text-gray-20">Start track</p>
               <h4 className="bold-20 mt-2 whitespace-nowrap">
-                Wonorejo Pasuruan
+                Takaosanguchi Station
               </h4>
             </div>
           </div>

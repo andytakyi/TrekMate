@@ -2,6 +2,8 @@
   "name": "TrekMate",
   "description": "App for passionate trekkers",
   "version": "0.1.0",
+  "author": "Poojan38380",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "dev": "next dev",

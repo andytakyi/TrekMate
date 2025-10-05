@@ -1,8 +1,8 @@
 // NAVIGATION
 export const NAV_LINKS = [
     { href: '/', key: 'home', label: 'Home' },
-    { href: '/', key: 'how_hilink_work', label: 'How Hilink Work?' },
-    { href: '/', key: 'services', label: 'Services' },
+    { href: '/', key: 'how_trekmate_works', label: 'How TrekMate Works' },
+    { href: '/', key: 'features', label: 'Features' },
     { href: '/', key: 'pricing ', label: 'Pricing ' },
     { href: '/', key: 'contact_us', label: 'Contact Us' },
   ];
@@ -18,32 +18,32 @@ export const NAV_LINKS = [
   // FEATURES SECTION
   export const FEATURES = [
     {
-      title: 'Real maps can be offline',
+      title: 'Offline maps across Japan',
       icon: '/map.svg',
       variant: 'green',
       description:
-        'We provide a solution for you to be able to use our application when climbing, yes offline maps you can use at any time there is no signal at the location',
+        'Use TrekMate maps anywhere in Japan — from Hokkaidō to Okinawa — even when there is no signal on the trail.',
     },
     {
-      title: 'Set an adventure schedule',
+      title: 'Plan with real‑time weather',
       icon: '/calendar.svg',
       variant: 'green',
       description:
-        "Schedule an adventure with friends. On holidays, there are many interesting offers from Hilink. That way, there's no more discussion",
+        'Check forecasts for your route and let TrekMate adjust plans automatically based on changing weather.',
     },
     {
-      title: 'Technology using augment reality',
+      title: 'Japanese voice input',
       icon: '/tech.svg',
       variant: 'green',
       description:
-        'Technology uses augmented reality as a guide to your hiking trail in the forest to the top of the mountain. Already supported by the latest technology without an internet connection',
+        'Talk to TrekMate in Japanese to search routes, get safety tips, and generate AI itineraries tailored to you.',
     },
     {
-      title: 'Many new locations every month',
+      title: 'New trails every month in Japan',
       icon: '/location.svg',
       variant: 'orange',
       description:
-        'Lots of new locations every month, because we have a worldwide community of climbers who share their best experiences with climbing',
+        'Fresh routes and hidden gems are added monthly by our Japan community — discover your next trek.',
     },
   ];
   
@@ -52,7 +52,7 @@ export const NAV_LINKS = [
     {
       title: 'Learn More',
       links: [
-        'About Hilink',
+        'About TrekMate',
         'Press Releases',
         'Environment',
         'Jobs',
@@ -62,15 +62,15 @@ export const NAV_LINKS = [
     },
     {
       title: 'Our Community',
-      links: ['Climbing xixixi', 'Hiking hilink', 'Hilink kinthill'],
+      links: ['TrekMate Japan', 'Hiking in Japan', 'TrekMate Trails'],
     },
   ];
   
   export const FOOTER_CONTACT_INFO = {
     title: 'Contact Us',
     links: [
-      { label: 'Admin Officer', value: '123-456-7890' },
-      { label: 'Email Officer', value: 'hilink@akinthil.com' },
+      { label: 'Support', value: '03-1234-5678' },
+      { label: 'Email', value: 'support@trekmate.jp' },
     ],
   };
   
