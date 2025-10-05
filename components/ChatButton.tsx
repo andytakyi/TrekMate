@@ -35,6 +35,7 @@ const ChatButton = () => {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const chatPanelRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -46,6 +47,25 @@ const ChatButton = () => {
     if (isOpen) {
       inputRef.current?.focus();
     }
+  }, [isOpen]);
+
+  // Close chat when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isOpen &&
+        chatPanelRef.current &&
+        !chatPanelRef.current.contains(event.target as Node) &&
+        !(event.target as HTMLElement).closest('button[aria-label="Open chat"]')
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
   }, [isOpen]);
 
   const addMessage = useCallback(
@@ -218,7 +238,10 @@ const ChatButton = () => {
 
       {/* Chat Panel */}
       {isOpen && (
-        <div className="fixed bottom-12 right-5 z-40 w-[580px] max-w-[90vw] h-[650px] bg-white rounded-3xl shadow-2xl border border-gray-20 overflow-hidden flex flex-col">
+        <div
+          ref={chatPanelRef}
+          className="fixed bottom-12 right-5 z-40 w-[580px] max-w-[90vw] h-[650px] bg-white rounded-3xl shadow-2xl border border-gray-20 overflow-hidden flex flex-col"
+        >
           {/* Header */}
           <div className="bg-green-50 px-6 py-4 flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-white/20 flexCenter">

@@ -155,3 +155,29 @@ body {
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
 }
+
+/* Custom thin scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #30AF5B #EEEEEE;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #EEEEEE;
+  border-radius: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #30AF5B;
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #292C27;
+}

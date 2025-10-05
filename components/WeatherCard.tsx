@@ -1,4 +1,5 @@
 import { WeatherData, WeatherSummary } from "@/lib/types/weather";
+import Link from "next/link";
 
 interface WeatherCardProps {
     weather: WeatherData;
@@ -46,52 +47,78 @@ const WeatherCard = ({ weather, summary }: WeatherCardProps) => {
                 </div>
             </div>
 
-            {/* 7-Day Forecast */}
-            <div className="px-4 py-3">
-                <h5 className="bold-14 text-gray-90 mb-3">7-Day Forecast</h5>
-                <div className="space-y-2">
-                    {weather.daily.map((day, idx) => {
-                        const date = new Date(day.date);
-                        const dayName = idx === 0 ? "Today" : date.toLocaleDateString("en-US", { weekday: "short" });
-                        const dateStr = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+             {/* 7-Day Forecast */}
+             <div className="px-4 py-3 border-b border-gray-20">
+                 <h5 className="bold-14 text-gray-90 mb-3">7-Day Forecast</h5>
+                 <div className="space-y-2">
+                     {weather.daily.map((day, idx) => {
+                         const date = new Date(day.date);
+                         const dayName = idx === 0 ? "Today" : date.toLocaleDateString("en-US", { weekday: "short" });
+                         const dateStr = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
-                        return (
-                            <div
-                                key={day.date}
-                                className="flex items-center justify-between py-2 border-b border-gray-10 last:border-0"
-                            >
-                                <div className="flex items-center gap-3 flex-1">
-                                    <div className="w-12">
-                                        <p className="bold-12 text-gray-90">{dayName}</p>
-                                        <p className="regular-10 text-gray-50">{dateStr}</p>
-                                    </div>
-                                    <div className="text-xl">{getWeatherIcon(day.weather_code)}</div>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                    <div className="flex items-center gap-1 regular-12 text-gray-50">
-                                        <span>💧</span>
-                                        <span>{Math.round(day.precipitation_probability_max)}%</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 min-w-[80px] justify-end">
-                                        <span className="regular-14 text-gray-50">{Math.round(day.temperature_min)}°</span>
-                                        <div className="w-12 h-1 bg-gray-20 rounded-full overflow-hidden">
-                                            <div
-                                                className="h-full bg-green-50"
-                                                style={{
-                                                    width: `${((day.temperature_max - day.temperature_min) / 30) * 100}%`,
-                                                }}
-                                            />
-                                        </div>
-                                        <span className="bold-14 text-gray-90">{Math.round(day.temperature_max)}°</span>
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-        </div>
-    );
-};
+                         return (
+                             <div
+                                 key={day.date}
+                                 className="flex items-center justify-between py-2 border-b border-gray-10 last:border-0"
+                             >
+                                 <div className="flex items-center gap-3 flex-1">
+                                     <div className="w-12">
+                                         <p className="bold-12 text-gray-90">{dayName}</p>
+                                         <p className="regular-10 text-gray-50">{dateStr}</p>
+                                     </div>
+                                     <div className="text-xl">{getWeatherIcon(day.weather_code)}</div>
+                                 </div>
+                                 <div className="flex items-center gap-4">
+                                     <div className="flex items-center gap-1 regular-12 text-gray-50">
+                                         <span>💧</span>
+                                         <span>{Math.round(day.precipitation_probability_max)}%</span>
+                                     </div>
+                                     <div className="flex items-center gap-2 min-w-[80px] justify-end">
+                                         <span className="regular-14 text-gray-50">{Math.round(day.temperature_min)}°</span>
+                                         <div className="w-12 h-1 bg-gray-20 rounded-full overflow-hidden">
+                                             <div
+                                                 className="h-full bg-green-50"
+                                                 style={{
+                                                     width: `${((day.temperature_max - day.temperature_min) / 30) * 100}%`,
+                                                 }}
+                                             />
+                                         </div>
+                                         <span className="bold-14 text-gray-90">{Math.round(day.temperature_max)}°</span>
+                                     </div>
+                                 </div>
+                             </div>
+                         );
+                     })}
+                 </div>
+             </div>
+
+             {/* Data Source */}
+             <div className="px-2 py-1 bg-gray-10">
+                 <Link
+                     href="https://open-meteo.com/"
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     className="regular-10 text-gray-50 text-xs hover:text-green-50 transition-colors flex items-center gap-1"
+                 >
+                     <span>By Open-Meteo</span>
+                     <svg
+                         xmlns="http://www.w3.org/2000/svg"
+                         fill="none"
+                         viewBox="0 0 24 24"
+                         strokeWidth={2}
+                         stroke="currentColor"
+                         className="w-3 h-3"
+                     >
+                         <path
+                             strokeLinecap="round"
+                             strokeLinejoin="round"
+                             d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
+                         />
+                     </svg>
+                 </Link>
+             </div>
+         </div>
+     );
+ };
 
 export default WeatherCard;
