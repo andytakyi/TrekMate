@@ -2,8 +2,10 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { getWeatherForLocation } from "@/app/actions/weather";
+import { generateTrekPlan } from "@/app/actions/ai";
 import { WeatherData, WeatherSummary } from "@/lib/types/weather";
 import WeatherCard from "./WeatherCard";
+import MarkdownMessage from "./MarkdownMessage";
 
 type Message = {
   id: string;
@@ -29,6 +31,9 @@ const ChatButton = () => {
 
   // Weather context
   const [destination, setDestination] = useState("");
+  const [weatherContext, setWeatherContext] = useState<
+    { weather: WeatherData; summary: WeatherSummary } | null
+  >(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -100,6 +105,7 @@ const ChatButton = () => {
         if (result.success && result.data) {
           const { summary, ...weather } = result.data;
           setDestination(userMessage);
+          setWeatherContext({ weather, summary });
 
           // Add weather card message
           addMessage(
@@ -108,11 +114,30 @@ const ChatButton = () => {
             { weather, summary }
           );
 
+          // Generate initial trek plan using free AI (Groq)
+          try {
+            const plan = await generateTrekPlan({
+              destination: userMessage,
+              weather,
+              summary,
+            });
+            addMessage("assistant", plan);
+          } catch (e) {
+            console.error("AI plan error:", e);
+            addMessage(
+              "assistant",
+              "I couldn't generate the trek plan right now. You can still ask questions about your trek."
+            );
+          }
+
           // Move to chat phase for follow-up questions
           setTimeout(() => {
-            addMessage("assistant", "Feel free to ask me anything about the weather or your trek! 🏔️");
+            addMessage(
+              "assistant",
+              "Ask me follow-up questions or request adjustments (distance, pace, budget). 🏔️"
+            );
             setPhase("chat");
-          }, 500);
+          }, 200);
         } else if (result.suggestions && result.suggestions.length > 0) {
           const suggestionsMsg =
             `I found multiple locations:\n\n` +
@@ -128,11 +153,29 @@ const ChatButton = () => {
           );
         }
       } else {
-        // Chat phase - placeholder for LLM
-        addMessage(
-          "assistant",
-          `I have weather data for ${destination}. AI follow-up questions coming soon!`
-        );
+        // Chat phase - use AI with existing weather context
+        if (!weatherContext) {
+          addMessage(
+            "assistant",
+            "Please provide a destination first so I can tailor advice."
+          );
+        } else {
+          try {
+            const reply = await generateTrekPlan({
+              destination,
+              weather: weatherContext.weather,
+              summary: weatherContext.summary,
+              userQuestion: userMessage,
+            });
+            addMessage("assistant", reply);
+          } catch (e) {
+            console.error("AI follow-up error:", e);
+            addMessage(
+              "assistant",
+              "I couldn't process that question right now. Please try again."
+            );
+          }
+        }
       }
     } catch (error) {
       console.error("Chat error:", error);
@@ -250,7 +293,11 @@ const ChatButton = () => {
                           : "bg-white text-gray-90 rounded-tl-sm"
                       }`}
                     >
-                      <p className="regular-14 whitespace-pre-line">{message.content}</p>
+                      {message.role === "assistant" ? (
+                        <MarkdownMessage content={message.content} />
+                      ) : (
+                        <p className="regular-14 whitespace-pre-line">{message.content}</p>
+                      )}
                     </div>
                     {/* Weather Card */}
                     {message.weatherData && (
