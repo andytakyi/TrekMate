@@ -20,6 +20,12 @@ TrekMate is a modern, AI-assisted trip planner for hikers and campers. Chat for 
 
 ## Demo
 
+<div align="center">
+  <img src="public/demo-1.png" alt="TrekMate landing page" width="48%" />
+  <img src="public/demo-2.png" alt="TrekMate AI chat interface" width="48%" />
+  <p><em>Left: Landing page • Right: AI chat interface</em></p>
+</div>
+
 - Ask: 「明日、富士山で登山できる？」 or “Weather for Kyoto and a 2‑day plan?”
 - Speak in Japanese by tapping the mic, then switch EN/JA as needed.
 
