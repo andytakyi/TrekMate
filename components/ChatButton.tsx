@@ -12,7 +12,7 @@ type Message = {
   weatherData?: { weather: WeatherData; summary: WeatherSummary };
 };
 
-type ConversationPhase = "askDestination" | "askOrigin" | "planning" | "chat";
+type ConversationPhase = "askDestination" | "chat";
 
 const ChatButton = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -27,11 +27,8 @@ const ChatButton = () => {
   const [phase, setPhase] = useState<ConversationPhase>("askDestination");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Trek context
+  // Weather context
   const [destination, setDestination] = useState("");
-  const [origin, setOrigin] = useState("");
-  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
-  const [weatherSummary, setWeatherSummary] = useState<WeatherSummary | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -103,20 +100,18 @@ const ChatButton = () => {
         if (result.success && result.data) {
           const { summary, ...weather } = result.data;
           setDestination(userMessage);
-          setWeatherData(weather);
-          setWeatherSummary(summary);
 
           // Add weather card message
           addMessage(
             "assistant",
-            `Great! Here's the weather forecast for ${weather.location.name}:`,
+            `Here's the weather forecast for ${weather.location.name}:`,
             { weather, summary }
           );
 
-          // Ask for origin
+          // Move to chat phase for follow-up questions
           setTimeout(() => {
-            addMessage("assistant", "Now, where will you be starting from?");
-            setPhase("askOrigin");
+            addMessage("assistant", "Feel free to ask me anything about the weather or your trek! 🏔️");
+            setPhase("chat");
           }, 500);
         } else if (result.suggestions && result.suggestions.length > 0) {
           const suggestionsMsg =
@@ -132,38 +127,11 @@ const ChatButton = () => {
             result.error || "Sorry, I couldn't find that location. Please try again."
           );
         }
-      } else if (phase === "askOrigin") {
-        // Save origin and generate plan
-        setOrigin(userMessage);
-        setPhase("planning");
-
-        addMessage("assistant", "Perfect! Generating your trek plan...");
-
-        setTimeout(() => {
-          if (weatherData && weatherSummary) {
-            const planMsg =
-              `🗺️ **Trek Plan: ${userMessage} → ${destination}**\n\n` +
-              `**Weather-Based Recommendations:**\n` +
-              weatherSummary.recommendations.map((r) => `• ${r}`).join("\n") +
-              `\n\n**Current Conditions:**\n` +
-              `• Temperature: ${Math.round(weatherData.current.temperature)}°C\n` +
-              `• Condition: ${weatherSummary.condition}\n` +
-              `• Risk Level: ${weatherSummary.riskLevel.toUpperCase()}\n\n` +
-              `Feel free to ask me anything about your trek! 🏔️`;
-
-            addMessage("assistant", planMsg);
-            setPhase("chat");
-          }
-        }, 1000);
       } else {
         // Chat phase - placeholder for LLM
         addMessage(
           "assistant",
-          `I have your trek details:\n\n` +
-            `📍 Destination: ${destination}\n` +
-            `🚀 Starting from: ${origin}\n` +
-            `🌤️ Weather: ${weatherSummary?.condition || "Available"}\n\n` +
-            `(AI follow-up questions coming soon!)`
+          `I have weather data for ${destination}. AI follow-up questions coming soon!`
         );
       }
     } catch (error) {
@@ -185,10 +153,8 @@ const ChatButton = () => {
     switch (phase) {
       case "askDestination":
         return "e.g., Mt. Fuji, Tokyo, Kyoto...";
-      case "askOrigin":
-        return "e.g., Tokyo Station, Shinjuku...";
       default:
-        return "Ask about gear, timing, routes...";
+        return "Ask about the weather or your trek...";
     }
   };
 
@@ -263,10 +229,7 @@ const ChatButton = () => {
             <div className="flex-1">
               <h3 className="bold-16 text-white">TrekMate AI</h3>
               <p className="regular-14 text-white/80">
-                {phase === "askDestination" && "Plan your trek"}
-                {phase === "askOrigin" && "Getting started"}
-                {phase === "planning" && "Generating plan..."}
-                {phase === "chat" && "Ready to help"}
+                {phase === "askDestination" ? "Weather & Trek Assistant" : "Ready to help"}
               </p>
             </div>
           </div>
