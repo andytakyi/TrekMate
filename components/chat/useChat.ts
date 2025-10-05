@@ -11,7 +11,7 @@ export function useChat() {
     {
       id: "welcome",
       role: "assistant",
-      content: "Hi! I'm TrekMate AI. Where do you want to trek in Japan? 🏔️",
+      content: "Hi! I'm TrekMate AI. Where do you want to trek/travel in Japan?",
     },
   ]);
   const [input, setInput] = useState("");
