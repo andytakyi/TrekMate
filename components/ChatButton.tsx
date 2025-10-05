@@ -28,6 +28,13 @@ const ChatButton = () => {
   const [input, setInput] = useState("");
   const [phase, setPhase] = useState<ConversationPhase>("askDestination");
   const [isLoading, setIsLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [speechLang, setSpeechLang] = useState<string>(() => {
+    if (typeof navigator !== "undefined" && Array.isArray((navigator as any).languages)) {
+      return (navigator as any).languages.includes("ja") ? "ja-JP" : "en-US";
+    }
+    return "en-US";
+  });
 
   // Weather context
   const [destination, setDestination] = useState("");
@@ -38,6 +45,7 @@ const ChatButton = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const chatPanelRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<any>(null);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -69,6 +77,75 @@ const ChatButton = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen]);
+
+  // Cleanup speech recognition on unmount
+  useEffect(() => {
+    return () => {
+      try {
+        if (recognitionRef.current) {
+          recognitionRef.current.onresult = null;
+          recognitionRef.current.onerror = null;
+          recognitionRef.current.onend = null;
+          recognitionRef.current.stop?.();
+        }
+      } catch {}
+    };
+  }, []);
+
+  const isSpeechSupported = typeof window !== "undefined" &&
+    ("SpeechRecognition" in (window as any) || "webkitSpeechRecognition" in (window as any));
+
+  const ensureRecognition = () => {
+    if (!isSpeechSupported) return null;
+    if (!recognitionRef.current) {
+      const SR: any = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const rec: any = new SR();
+      rec.continuous = false;
+      rec.interimResults = false;
+      recognitionRef.current = rec;
+    }
+    return recognitionRef.current;
+  };
+
+  const startListening = () => {
+    const rec = ensureRecognition();
+    if (!rec) return;
+    try {
+      rec.lang = speechLang;
+      rec.onresult = (e: any) => {
+        const transcript = Array.from(e.results)
+          .map((r: any) => r[0]?.transcript || "")
+          .join(" ")
+          .trim();
+        if (transcript) {
+          setInput((prev) => (prev ? (prev.endsWith(" ") ? prev : prev + " ") + transcript : transcript));
+        }
+      };
+      rec.onerror = () => {
+        setIsListening(false);
+      };
+      rec.onend = () => {
+        setIsListening(false);
+      };
+      rec.start();
+      setIsListening(true);
+    } catch {
+      setIsListening(false);
+    }
+  };
+
+  const stopListening = () => {
+    try {
+      recognitionRef.current?.stop?.();
+    } catch {}
+    setIsListening(false);
+  };
+
+  const toggleListening = () => {
+    if (!isSpeechSupported) return;
+    if (isListening) stopListening();
+    else startListening();
+  };
 
   const addMessage = useCallback(
     (
@@ -347,7 +424,7 @@ const ChatButton = () => {
 
           {/* Input area */}
           <div className="p-4 bg-white border-t border-gray-20">
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
               <input
                 ref={inputRef}
                 type="text"
@@ -358,6 +435,42 @@ const ChatButton = () => {
                 disabled={isLoading}
                 className="flex-1 px-4 py-3 border border-gray-20 rounded-full regular-14 focus:outline-none focus:border-green-50 transition-colors disabled:bg-gray-10 disabled:cursor-not-allowed"
               />
+              {/* Language selector */}
+              {isSpeechSupported && (
+                <select
+                  value={speechLang}
+                  onChange={(e) => setSpeechLang(e.target.value)}
+                  disabled={isLoading || isListening}
+                  aria-label="Speech language"
+                  className="h-12 px-3 border border-gray-20 rounded-full regular-14 bg-white text-gray-90 focus:outline-none focus:border-green-50"
+                >
+                  <option value="en-US">EN</option>
+                  <option value="ja-JP">日本語</option>
+                </select>
+              )}
+              {/* Mic toggle */}
+              {isSpeechSupported && (
+                <button
+                  type="button"
+                  onClick={toggleListening}
+                  disabled={isLoading}
+                  className={`h-12 w-12 rounded-full flexCenter transition-colors ${
+                    isListening ? "bg-red-500 hover:bg-red-600" : "bg-gray-20 hover:bg-gray-30"
+                  }`}
+                  aria-label={isListening ? "Stop voice input" : "Start voice input"}
+                  title={isListening ? "Stop voice input" : "Start voice input"}
+                >
+                  {isListening ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-5 h-5" fill="white">
+                      <path d="M6 6h12v12H6z" />
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-5 h-5" fill="#111">
+                      <path d="M12 14a3 3 0 003-3V7a3 3 0 10-6 0v4a3 3 0 003 3zm5-3a5 5 0 11-10 0H5a7 7 0 0014 0h-2zM11 19h2v3h-2z" />
+                    </svg>
+                  )}
+                </button>
+              )}
               <button
                 onClick={handleSendMessage}
                 disabled={isLoading || !input.trim()}
