@@ -1,37 +1,197 @@
 "use client";
 
-import React, { useState } from "react";
-import Image from "next/image";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { getWeatherForLocation } from "@/app/actions/weather";
+import { WeatherData, WeatherSummary } from "@/lib/types/weather";
+import WeatherCard from "./WeatherCard";
+
+type Message = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  weatherData?: { weather: WeatherData; summary: WeatherSummary };
+};
+
+type ConversationPhase = "askDestination" | "askOrigin" | "planning" | "chat";
 
 const ChatButton = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: "welcome",
+      role: "assistant",
+      content: "Hi! I'm TrekMate AI. Where do you want to trek in Japan? 🏔️",
+    },
+  ]);
+  const [input, setInput] = useState("");
+  const [phase, setPhase] = useState<ConversationPhase>("askDestination");
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Trek context
+  const [destination, setDestination] = useState("");
+  const [origin, setOrigin] = useState("");
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+  const [weatherSummary, setWeatherSummary] = useState<WeatherSummary | null>(null);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-scroll to bottom
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // Focus input when opened
+  useEffect(() => {
+    if (isOpen) {
+      inputRef.current?.focus();
+    }
+  }, [isOpen]);
+
+  const addMessage = useCallback(
+    (
+      role: "user" | "assistant",
+      content: string,
+      weatherData?: { weather: WeatherData; summary: WeatherSummary }
+    ) => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString() + Math.random(),
+          role,
+          content,
+          weatherData,
+        },
+      ]);
+    },
+    []
+  );
+
+  const handleSendMessage = async () => {
+    if (!input.trim() || isLoading) return;
+
+    const userMessage = input.trim();
+    setInput("");
+    addMessage("user", userMessage);
+    setIsLoading(true);
+
+    try {
+      if (phase === "askDestination") {
+        // Fetch weather for destination
+        const result = await getWeatherForLocation(userMessage);
+
+        if (result.success && result.data) {
+          const { summary, ...weather } = result.data;
+          setDestination(userMessage);
+          setWeatherData(weather);
+          setWeatherSummary(summary);
+
+          // Add weather card message
+          addMessage(
+            "assistant",
+            `Great! Here's the weather forecast for ${weather.location.name}:`,
+            { weather, summary }
+          );
+
+          // Ask for origin
+          setTimeout(() => {
+            addMessage("assistant", "Now, where will you be starting from?");
+            setPhase("askOrigin");
+          }, 500);
+        } else if (result.suggestions && result.suggestions.length > 0) {
+          const suggestionsMsg =
+            `I found multiple locations:\n\n` +
+            result.suggestions
+              .map((s, i) => `${i + 1}. ${s.name}, ${s.admin1 || ""} ${s.country}`)
+              .join("\n") +
+            `\n\nPlease specify which one.`;
+          addMessage("assistant", suggestionsMsg);
+        } else {
+          addMessage(
+            "assistant",
+            result.error || "Sorry, I couldn't find that location. Please try again."
+          );
+        }
+      } else if (phase === "askOrigin") {
+        // Save origin and generate plan
+        setOrigin(userMessage);
+        setPhase("planning");
+
+        addMessage("assistant", "Perfect! Generating your trek plan...");
+
+        setTimeout(() => {
+          if (weatherData && weatherSummary) {
+            const planMsg =
+              `🗺️ **Trek Plan: ${userMessage} → ${destination}**\n\n` +
+              `**Weather-Based Recommendations:**\n` +
+              weatherSummary.recommendations.map((r) => `• ${r}`).join("\n") +
+              `\n\n**Current Conditions:**\n` +
+              `• Temperature: ${Math.round(weatherData.current.temperature)}°C\n` +
+              `• Condition: ${weatherSummary.condition}\n` +
+              `• Risk Level: ${weatherSummary.riskLevel.toUpperCase()}\n\n` +
+              `Feel free to ask me anything about your trek! 🏔️`;
+
+            addMessage("assistant", planMsg);
+            setPhase("chat");
+          }
+        }, 1000);
+      } else {
+        // Chat phase - placeholder for LLM
+        addMessage(
+          "assistant",
+          `I have your trek details:\n\n` +
+            `📍 Destination: ${destination}\n` +
+            `🚀 Starting from: ${origin}\n` +
+            `🌤️ Weather: ${weatherSummary?.condition || "Available"}\n\n` +
+            `(AI follow-up questions coming soon!)`
+        );
+      }
+    } catch (error) {
+      console.error("Chat error:", error);
+      addMessage("assistant", "Sorry, something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  const getPlaceholder = () => {
+    switch (phase) {
+      case "askDestination":
+        return "e.g., Mt. Fuji, Tokyo, Kyoto...";
+      case "askOrigin":
+        return "e.g., Tokyo Station, Shinjuku...";
+      default:
+        return "Ask about gear, timing, routes...";
+    }
+  };
 
   return (
     <>
       {/* Floating Chat Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-5 right-5 z-50 flexCenter h-16 w-16 rounded-full border border-green-50 bg-white shadow-lg transition-all hover:scale-110 hover:shadow-xl active:scale-95"
+        className={`fixed ${!isOpen ? "bottom-5 right-5" : "bottom-3 right-3"} z-50 flexCenter ${!isOpen ? "h-16 w-16" : "h-8 w-8"} rounded-full border border-green-50 bg-white shadow-lg transition-all hover:scale-110 hover:shadow-xl active:scale-95`}
         aria-label="Open chat"
       >
         {isOpen ? (
-          // Close
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
             strokeWidth={2.5}
-            stroke="green"
-            className="w-7 h-7"
+            stroke="red"
+            className="w-5 h-5"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M6 18L18 6M6 6l12 12"
-            />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         ) : (
-          // Chat bubble
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
@@ -48,15 +208,17 @@ const ChatButton = () => {
           </svg>
         )}
 
-        {/* Notification badge ( for unread messages) */}
-        <span className="absolute -top-1 -right-1 flexCenter h-5 w-5 rounded-full bg-orange-50 text-white text-xs font-bold">
-          1
-        </span>
+        {/* Notification badge */}
+        {!isOpen && messages.length > 1 && (
+          <span className="absolute -top-1 -right-1 flexCenter h-5 w-5 rounded-full bg-orange-50 text-white text-xs font-bold">
+            {messages.length - 1}
+          </span>
+        )}
       </button>
 
       {/* Chat Panel */}
       {isOpen && (
-        <div className="fixed bottom-24 right-5 z-40 w-[580px] max-w-[90vw] h-[600px] bg-white rounded-3xl shadow-2xl border border-gray-20 overflow-hidden flex flex-col">
+        <div className="fixed bottom-12 right-5 z-40 w-[580px] max-w-[90vw] h-[650px] bg-white rounded-3xl shadow-2xl border border-gray-20 overflow-hidden flex flex-col">
           {/* Header */}
           <div className="bg-green-50 px-6 py-4 flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-white/20 flexCenter">
@@ -77,44 +239,96 @@ const ChatButton = () => {
             </div>
             <div className="flex-1">
               <h3 className="bold-16 text-white">TrekMate AI</h3>
-              <p className="regular-14 text-white/80">Plan your trek</p>
+              <p className="regular-14 text-white/80">
+                {phase === "askDestination" && "Plan your trek"}
+                {phase === "askOrigin" && "Getting started"}
+                {phase === "planning" && "Generating plan..."}
+                {phase === "chat" && "Ready to help"}
+              </p>
             </div>
           </div>
 
           {/* Messages area */}
-          <div className="flex-1 p-6 overflow-y-auto bg-gray-10">
+          <div className="flex-1 py-6 px-3 overflow-y-auto bg-gray-10">
             <div className="flex flex-col gap-4">
-              {/* AI message */}
-              <div className="flex gap-3">
-                <div className="h-8 w-8 rounded-full bg-green-50 flexCenter flex-shrink-0">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="white"
-                    viewBox="0 0 24 24"
-                    className="w-5 h-5"
-                  >
-                    <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
-                  </svg>
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`flex ${message.role === "user" ? "flex-row-reverse" : ""}`}
+                >
+                  <div className={message.role === "user" ? "max-w-[350px]" : "flex-1 max-w-[350px]"}>
+                    <div
+                      className={`px-4 py-3 rounded-2xl shadow-sm ${
+                        message.role === "user"
+                          ? "bg-green-50 text-white rounded-tr-sm ml-auto text-right inline-block"
+                          : "bg-white text-gray-90 rounded-tl-sm"
+                      }`}
+                    >
+                      <p className="regular-14 whitespace-pre-line">{message.content}</p>
+                    </div>
+                    {/* Weather Card */}
+                    {message.weatherData && (
+                      <WeatherCard
+                        weather={message.weatherData.weather}
+                        summary={message.weatherData.summary}
+                      />
+                    )}
+                  </div>
                 </div>
-                <div className="bg-white px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm max-w-[260px]">
-                  <p className="regular-14 text-gray-90">
-                    Hi! I'm TrekMate AI. Where do you want to trek in Japan? 🏔️
-                  </p>
+              ))}
+
+              {/* Loading indicator */}
+              {isLoading && (
+                <div className="flex gap-3">
+                  <div className="h-8 w-8 rounded-full bg-green-50 flexCenter flex-shrink-0">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="white"
+                      viewBox="0 0 24 24"
+                      className="w-5 h-5 animate-pulse"
+                    >
+                      <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                    </svg>
+                  </div>
+                  <div className="bg-white px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm">
+                    <div className="flex gap-1">
+                      <div
+                        className="w-2 h-2 bg-gray-30 rounded-full animate-bounce"
+                        style={{ animationDelay: "0ms" }}
+                      ></div>
+                      <div
+                        className="w-2 h-2 bg-gray-30 rounded-full animate-bounce"
+                        style={{ animationDelay: "150ms" }}
+                      ></div>
+                      <div
+                        className="w-2 h-2 bg-gray-30 rounded-full animate-bounce"
+                        style={{ animationDelay: "300ms" }}
+                      ></div>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
+              <div ref={messagesEndRef} />
             </div>
           </div>
 
-        {/* Input area */}
-          <div className="p-4  bg-white">
+          {/* Input area */}
+          <div className="p-4 bg-white border-t border-gray-20">
             <div className="flex gap-2">
               <input
+                ref={inputRef}
                 type="text"
-                placeholder="Enter trekking location..."
-                className="flex-1 px-4 py-3 border border-gray-20 rounded-full regular-14 focus:outline-none focus:border-green-50 transition-colors"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder={getPlaceholder()}
+                disabled={isLoading}
+                className="flex-1 px-4 py-3 border border-gray-20 rounded-full regular-14 focus:outline-none focus:border-green-50 transition-colors disabled:bg-gray-10 disabled:cursor-not-allowed"
               />
               <button
-                className="h-12 w-12 rounded-full bg-green-50 flexCenter hover:bg-green-90 transition-colors"
+                onClick={handleSendMessage}
+                disabled={isLoading || !input.trim()}
+                className="h-12 w-12 rounded-full bg-green-50 flexCenter hover:bg-green-90 transition-colors disabled:bg-gray-20 disabled:cursor-not-allowed"
                 aria-label="Send message"
               >
                 <svg
