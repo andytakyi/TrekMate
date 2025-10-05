@@ -14,6 +14,7 @@ export default function ChatPanel({ compact = false }: ChatPanelProps) {
     messages,
     input,
     phase,
+    destination,
     isLoading,
     isListening,
     speechLang,
@@ -26,13 +27,21 @@ export default function ChatPanel({ compact = false }: ChatPanelProps) {
     toggleListening,
     setSpeechLang,
     followUpSuggestions,
+    beginChangeCity,
   } = useChat();
 
   return (
     <div className="bg-white overflow-hidden flex flex-col h-full">
       <ChatHeader
         title="TrekMate AI"
-        subtitle={phase === "askDestination" ? "Weather & Trek Assistant" : "Ready to help"}
+        subtitle={
+          phase === "askDestination"
+            ? "Weather & Trek Assistant"
+            : destination
+            ? `Ready to help • ${destination}`
+            : "Ready to help"
+        }
+        onChangeCity={beginChangeCity}
       />
       <ChatMessages
         messages={messages}
@@ -40,7 +49,13 @@ export default function ChatPanel({ compact = false }: ChatPanelProps) {
         messagesEndRef={messagesEndRef}
         compact={compact}
         followUpSuggestions={followUpSuggestions}
-        onSuggestionClick={(q) => send(q)}
+        onSuggestionClick={(q) => {
+          if (q.toLowerCase().includes("change city")) {
+            beginChangeCity();
+          } else {
+            send(q);
+          }
+        }}
       />
       <ChatInput
         input={input}

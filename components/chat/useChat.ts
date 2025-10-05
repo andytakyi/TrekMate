@@ -131,17 +131,103 @@ export function useChat() {
     if (weatherContext) {
       const loc = weatherContext.weather.location?.name || destination || "this trek";
       return [
+        "Change city",
         `Suggest a 2-day itinerary around ${loc}`,
         "How will the weather affect difficulty?",
         "What gear should I pack for these conditions?",
       ];
     }
     return [
+      "Change city",
       "What are popular treks nearby?",
       "What is the best season to visit?",
       "Any beginner-friendly routes?",
     ];
   }, [weatherContext, destination]);
+
+  const applyLocation = useCallback(
+    async (locationQuery: string, announcePrefix?: string) => {
+      const result = await getWeatherForLocation(locationQuery);
+      if (result.success && result.data) {
+        const { summary, ...weather } = result.data;
+        setDestination(locationQuery);
+        setWeatherContext({ weather, summary });
+
+        addMessage(
+          "assistant",
+          `${announcePrefix ?? ""}${announcePrefix ? " " : ""}Here's the weather forecast for ${weather.location.name}:`,
+          {
+            weather,
+            summary,
+          }
+        );
+
+        try {
+          const plan = await generateTrekPlan({ destination: locationQuery, weather, summary });
+          addMessage("assistant", plan);
+        } catch (e) {
+          console.error("AI plan error:", e);
+          addMessage(
+            "assistant",
+            "I couldn't generate the trek plan right now. You can still ask questions about your trek."
+          );
+        }
+
+        setTimeout(() => {
+          addMessage(
+            "assistant",
+            "Ask me follow-up questions or request adjustments (distance, pace, budget). 🏔️"
+          );
+          setFollowUpSuggestions(generateFollowUpSuggestions());
+          setPhase("chat");
+        }, 200);
+        return true;
+      } else if (result.suggestions && result.suggestions.length > 0) {
+        const suggestionsMsg =
+          `I found multiple locations:\n\n` +
+          result.suggestions
+            .map((s, i) => `${i + 1}. ${s.name}, ${s.admin1 || ""} ${s.country}`)
+            .join("\n") +
+          `\n\nPlease specify which one.`;
+        addMessage("assistant", suggestionsMsg);
+        // Switch to destination asking phase to let user clarify
+        setPhase("askDestination");
+        return false;
+      } else {
+        addMessage(
+          "assistant",
+          result.error || "Sorry, I couldn't find that location. Please try again."
+        );
+        return false;
+      }
+    },
+    [addMessage, generateFollowUpSuggestions]
+  );
+
+  const changeCityRegexes: RegExp[] = [
+    /(change|set|switch)\s+(city|location)\s*(to|=)?\s+(.+)/i,
+    /^(?:weather|forecast)\s+(?:in|for|at|around)\s+(.+)/i,
+    /^(?:what about|how about)\s+(.+)/i,
+  ];
+
+  const extractCityFromMessage = (text: string): string | null => {
+    for (const rx of changeCityRegexes) {
+      const m = text.match(rx);
+      if (m) {
+        const city = (m[4] || m[1] || m[2] || m[0])
+          ?.toString()
+          .replace(/^(?:in|for|at|around)\s+/i, "")
+          .trim();
+        if (city && city.length > 1) return city;
+      }
+    }
+    return null;
+  };
+
+  const beginChangeCity = useCallback(() => {
+    addMessage("assistant", "Sure — which city should I switch to?");
+    setPhase("askDestination");
+  }, [addMessage]);
 
   const send = async (overrideText?: string) => {
     const prepared = (overrideText ?? input).trim();
@@ -155,41 +241,13 @@ export function useChat() {
 
     try {
       if (phase === "askDestination") {
-        const result = await getWeatherForLocation(userMessage);
-        if (result.success && result.data) {
-          const { summary, ...weather } = result.data;
-          setDestination(userMessage);
-          setWeatherContext({ weather, summary });
-
-          addMessage("assistant", `Here's the weather forecast for ${weather.location.name}:`, {
-            weather,
-            summary,
-          });
-
-          try {
-            const plan = await generateTrekPlan({ destination: userMessage, weather, summary });
-            addMessage("assistant", plan);
-          } catch (e) {
-            console.error("AI plan error:", e);
-            addMessage("assistant", "I couldn't generate the trek plan right now. You can still ask questions about your trek.");
-          }
-
-          setTimeout(() => {
-            addMessage("assistant", "Ask me follow-up questions or request adjustments (distance, pace, budget). 🏔️");
-            setFollowUpSuggestions(generateFollowUpSuggestions());
-            setPhase("chat");
-          }, 200);
-        } else if (result.suggestions && result.suggestions.length > 0) {
-          const suggestionsMsg =
-            `I found multiple locations:\n\n` +
-            result.suggestions.map((s, i) => `${i + 1}. ${s.name}, ${s.admin1 || ""} ${s.country}`).join("\n") +
-            `\n\nPlease specify which one.`;
-          addMessage("assistant", suggestionsMsg);
-        } else {
-          addMessage("assistant", result.error || "Sorry, I couldn't find that location. Please try again.");
-        }
+        await applyLocation(userMessage);
       } else {
-        if (!weatherContext) {
+        // In chat phase: check if the user intends to change city
+        const maybeCity = extractCityFromMessage(userMessage);
+        if (maybeCity) {
+          await applyLocation(maybeCity, "Switching city.");
+        } else if (!weatherContext) {
           addMessage("assistant", "Please provide a destination first so I can tailor advice.");
         } else {
           try {
@@ -232,12 +290,14 @@ export function useChat() {
     isLoading,
     isListening,
     speechLang,
+    destination,
     messagesEndRef,
     inputRef,
     followUpSuggestions,
     // actions
     setInput,
     send,
+    beginChangeCity,
     getPlaceholder,
     // speech
     isSpeechSupported,

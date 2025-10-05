@@ -3,9 +3,10 @@
 type ChatHeaderProps = {
   title: string;
   subtitle: string;
+  onChangeCity?: () => void;
 };
 
-export default function ChatHeader({ title, subtitle }: ChatHeaderProps) {
+export default function ChatHeader({ title, subtitle, onChangeCity }: ChatHeaderProps) {
   return (
     <div className="bg-green-50 px-6 py-4 flex items-center gap-3">
       <div className="h-10 w-10 rounded-full bg-white/20 flexCenter">
@@ -28,6 +29,16 @@ export default function ChatHeader({ title, subtitle }: ChatHeaderProps) {
         <h3 className="bold-16 text-white">{title}</h3>
         <p className="regular-14 text-white/80">{subtitle}</p>
       </div>
+      {onChangeCity && (
+        <button
+          type="button"
+          onClick={onChangeCity}
+          className="px-3 py-2 rounded-full bg-white text-green-50 regular-12 hover:bg-white/90 transition-colors"
+          title="Change city"
+        >
+          Change city
+        </button>
+      )}
     </div>
   );
 }
