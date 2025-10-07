@@ -17,6 +17,7 @@ const GetApp = () => {
               title="App Store"
               icon="/apple.svg"
               variant="btn_white"
+              showDownloadNotice
               full
             />
             <Button
@@ -24,6 +25,7 @@ const GetApp = () => {
               title="Play Store"
               icon="/android.svg"
               variant="btn_dark_green_outline"
+              showDownloadNotice
               full
             />
           </div>

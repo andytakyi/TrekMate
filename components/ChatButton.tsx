@@ -9,6 +9,9 @@ const ChatButton = () => {
 
   // Close chat when clicking outside
   useEffect(() => {
+    const handleOpenChat = () => setIsOpen(true);
+    window.addEventListener("open-chat", handleOpenChat as EventListener);
+
     const handleClickOutside = (event: MouseEvent) => {
       if (
         isOpen &&
@@ -23,6 +26,7 @@ const ChatButton = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      window.removeEventListener("open-chat", handleOpenChat as EventListener);
     };
   }, [isOpen]);
 
