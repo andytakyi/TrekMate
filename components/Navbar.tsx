@@ -28,6 +28,7 @@ const Navbar = () => {
           title="Log In"
           icon="/user.svg"
           variant="btn_dark_green"
+          showDownloadNotice
         />
       </div>
       <Image
