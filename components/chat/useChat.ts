@@ -32,7 +32,7 @@ export function useChat() {
   const [followUpSuggestions, setFollowUpSuggestions] = useState<string[]>([]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const recognitionRef = useRef<any>(null);
 
   // Auto-scroll to bottom
