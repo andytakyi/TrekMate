@@ -205,9 +205,13 @@ export function useChat() {
   );
 
   const changeCityRegexes: RegExp[] = [
+    // English
     /(change|set|switch)\s+(city|location)\s*(to|=)?\s+(.+)/i,
     /^(?:weather|forecast)\s+(?:in|for|at|around)\s+(.+)/i,
     /^(?:what about|how about)\s+(.+)/i,
+    // Japanese examples: "東京に変えて", "東京へ変更", "東京の天気", "東京にして"
+    /^(.+?)(?:に?変えて|へ?変更|に?して)$/,
+    /^(.+?)の天気(?:は|を|って)?$/,
   ];
 
   const extractCityFromMessage = (text: string): string | null => {
@@ -217,6 +221,8 @@ export function useChat() {
         const city = (m[4] || m[1] || m[2] || m[0])
           ?.toString()
           .replace(/^(?:in|for|at|around)\s+/i, "")
+          .replace(/の?天気(?:は|を|って)?$/g, "")
+          .replace(/(?:に?変えて|へ?変更|に?して)$/g, "")
           .trim();
         if (city && city.length > 1) return city;
       }

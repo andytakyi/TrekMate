@@ -6,6 +6,7 @@ export interface GeocodingResult {
   latitude: number;
   longitude: number;
   country: string;
+  countryCode?: string; // ISO-3166 alpha-2
   admin1?: string; // State/Prefecture
   admin2?: string; // County/District
 }

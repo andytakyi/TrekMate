@@ -45,14 +45,47 @@ function containsJapanese(text: string): boolean {
 }
 
 /**
+ * Normalize free-form user input to a best-effort location name.
+ * Handles common English and Japanese phrasings like "weather in X" or "Xの天気".
+ */
+function normalizeLocationName(input: string): string {
+  let text = (input || "").trim();
+  text = text.replace(/^[\s、。,.!！?？]+|[\s、。,.!！?？]+$/g, "");
+
+  const jp = containsJapanese(text);
+
+  if (jp) {
+
+    text = text
+      .replace(/の?天気(?:は|を|って)?/g, "")
+      .replace(/の?天候(?:は|を|って)?/g, "")
+      .replace(/の?予報(?:は|を|って)?/g, "")
+      .replace(/(見せて|教えて|ください|下さい|お願いします?)$/g, "")
+      .replace(/[はがをにでへとやも]|(?:について)$/g, "")
+      .trim();
+  } else {
+    text = text
+      .replace(/^(what(?:'s| is)\s+)?the\s+weather\s+(in|at|for)\s+/i, "")
+      .replace(/^(weather|forecast)\s+(in|at|for|around)\s+/i, "")
+      .replace(/\b(weather|forecast)\b$/i, "")
+      .trim();
+  }
+
+  text = text.replace(/[\s\u3000]+/g, " ");
+
+  return text;
+}
+
+/**
  * Geocode a location name to coordinates
  */
 export async function geocodeLocation(
   locationName: string
 ): Promise<GeocodingResult[]> {
-  const language = containsJapanese(locationName) ? "ja" : "en";
+  const normalized = normalizeLocationName(locationName);
+  const language = containsJapanese(normalized) ? "ja" : "en";
   const params = new URLSearchParams({
-    name: locationName,
+    name: normalized,
     count: "5",
     language,
     format: "json",
@@ -69,7 +102,7 @@ export async function geocodeLocation(
   const data = await response.json();
 
   if (!data.results || data.results.length === 0) {
-    throw new Error(`Location "${locationName}" not found`);
+    throw new Error(`Location "${normalized}" not found`);
   }
 
   return data.results.map((result: any) => ({
@@ -78,6 +111,7 @@ export async function geocodeLocation(
     latitude: result.latitude,
     longitude: result.longitude,
     country: result.country,
+    countryCode: result.country_code, // e.g., "JP"
     admin1: result.admin1,
     admin2: result.admin2,
   }));
