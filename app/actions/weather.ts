@@ -37,9 +37,11 @@ export async function getWeatherForLocation(
 
     // If multiple results, check if first one is clearly in Japan
     // Otherwise return suggestions for disambiguation
-    const japanResults = geocodeResults.filter(
-      (r) => r.country === "Japan" || r.country === "JP"
-    );
+  const japanResults = geocodeResults.filter((r) => {
+    const country = (r.country || "").toLowerCase();
+    const code = (r.countryCode || "").toUpperCase();
+    return code === "JP" || country === "japan" || r.country === "日本";
+  });
 
     let selectedLocation: GeocodingResult;
 
